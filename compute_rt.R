@@ -202,5 +202,5 @@ p3 <- p3 + scale_fill_manual(values = cbPalette[c(1,2,1,2)]) + scale_colour_manu
 p3 <- p3 + ylab('R(t)') + xlab('Date') + theme_bw(base_size = 18) + theme(legend.position = "bottom") + labs(color = "Method", fill = "Method", linetype = "Method") + guides(fill=guide_legend(nrow=2))
 p3
 
-ggsave('rt_three_methods.pdf', width = 12, height = 8)
-ggsave('rt_three_methods.png', width = 12, height = 8)
+ggsave('rt_four_methods.pdf', width = 12, height = 8)
+ggsave('rt_four_methods.png', width = 12, height = 8)
