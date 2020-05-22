@@ -9,4 +9,4 @@ We reanalyzed the epidemic curve in Pan et al. *JAMA*. 2020 (doi:10.1001/jama.20
 
 ![Re-analysis of the epidemic curve in Figure 1 of Pan et al.](rt_four_methods.png)
 
-In short, we find that Using symptom onsets instead of incidences results in time-lagged estimate of the instantaneous reproduction number R(t). More details can be found in [this document](jama_comment.pdf).
+In short, we find that using symptom onsets instead of incidences results in time-lagged estimate of the instantaneous reproduction number R(t). More details can be found in [this document](jama_comment.pdf).
