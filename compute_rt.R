@@ -65,7 +65,7 @@ wt_res_parametric_si <- wallinga_teunis(It,
                                             t_end = t_end,
                                             n_sim = 100))
 print(wt_res_parametric_si$R)
-wt_results <- data.frame(method = 'Wallinga-Teunis',
+wt_results <- data.frame(method = 'Wallinga-Teunis (smoothing)',
            date = df$Date[wt_res_parametric_si$R$t_end],
            meanR = wt_res_parametric_si$R$`Mean(R)`,
            lbd = wt_res_parametric_si$R$`Quantile.0.025(R)`,
@@ -73,16 +73,35 @@ wt_results <- data.frame(method = 'Wallinga-Teunis',
 wt_results_january <- subset(wt_results, date >= 32)
 results <- rbind(results, wt_results)
 
-break_days <- sapply(c('1-Jan','10-Jan','23-Jan', '2-Feb','17-Feb'), date.process) + as.Date("2019-11-30")
-print(break_days)
-p1 <- ggplot(data = subset(results, date >= as.Date('2020-01-01')), aes(x = date, y = meanR, group = method))
-p1 <- p1 + geom_ribbon(aes(ymin = lbd, ymax = ubd, fill = method), alpha = 0.3) + geom_line( aes(colour = method))
-p1 <- p1 + geom_vline(xintercept = break_days)
-p1 <- p1 + geom_hline(yintercept = 1)
-p1 <- p1 + scale_y_continuous(minor_breaks = seq(0,5,0.5)) + scale_x_date(date_breaks = "5 days", date_minor_breaks = "1 day", date_labels = "%b %d")
-p1 <- p1 + scale_fill_manual(values = cbPalette) + scale_colour_manual(values=cbPalette)
-p1 <- p1+ ylab('Rt') + xlab('Date') + theme_bw(base_size = 18) + theme(legend.position = "bottom")
-p1
+## No smoothing (t_start = t_end)
+wt_res_parametric_si <- wallinga_teunis(It,
+                                        method = 'parametric_si',
+                                        config = list(
+                                            mean_si = 7.5,
+                                            std_si = 3.4,
+                                            t_start = t_end,
+                                            t_end = t_end,
+                                            n_sim = 100))
+print(wt_res_parametric_si$R)
+wt_results <- data.frame(method = 'Wallinga-Teunis (no smoothing)',
+           date = df$Date[wt_res_parametric_si$R$t_end],
+           meanR = wt_res_parametric_si$R$`Mean(R)`,
+           lbd = wt_res_parametric_si$R$`Quantile.0.025(R)`,
+           ubd = wt_res_parametric_si$R$`Quantile.0.975(R)`)
+wt_results_january <- subset(wt_results, date >= 32)
+results <- rbind(results, wt_results)
+
+
+## break_days <- sapply(c('1-Jan','10-Jan','23-Jan', '2-Feb','17-Feb'), date.process) + as.Date("2019-11-30")
+## print(break_days)
+## p1 <- ggplot(data = subset(results, date >= as.Date('2020-01-01')), aes(x = date, y = meanR, group = method))
+## p1 <- p1 + geom_ribbon(aes(ymin = lbd, ymax = ubd, fill = method), alpha = 0.3) + geom_line( aes(colour = method))
+## p1 <- p1 + geom_vline(xintercept = break_days)
+## p1 <- p1 + geom_hline(yintercept = 1)
+## p1 <- p1 + scale_y_continuous(minor_breaks = seq(0,5,0.5)) + scale_x_date(date_breaks = "5 days", date_minor_breaks = "1 day", date_labels = "%b %d")
+## p1 <- p1 + scale_fill_manual(values = cbPalette) + scale_colour_manual(values=cbPalette)
+## p1 <- p1+ ylab('Rt') + xlab('Date') + theme_bw(base_size = 18) + theme(legend.position = "bottom")
+## p1
 
 ## ggsave('reproduce_figure4.pdf', width = 12, height = 8)
 
@@ -142,42 +161,46 @@ simulate.Rt <- function(sim) {
 output <- parallel::mclapply(1:1000, simulate.Rt, mc.cores = 3)
 output <- do.call(rbind, output)
 
-break_days <- sapply(c('1-Jan','10-Jan','23-Jan', '2-Feb','17-Feb'), date.process) + as.Date("2019-11-30")
-p2 <- ggplot(subset(output, Date >= as.Date("2020-01-01")))+
-    aes(x = Date, y = Rt) + geom_line(aes(group = sim), alpha = 0.3) +
-    geom_line(stat = "summary", fun.y = "mean", col = "red") +
-    theme_bw()
-p2 <- p2 + geom_vline(xintercept = break_days)
-p2 <- p2 + geom_hline(yintercept = 1)
-p2 <- p2 + scale_y_continuous(minor_breaks = seq(0,5,0.5))
-p2 <- p2 + scale_x_date(date_breaks = "5 days", date_minor_breaks = "1 day", date_labels = "%b %d")
-p2 <- p2 + ylab('Rt') + xlab('Date')
-p2
+## break_days <- sapply(c('1-Jan','10-Jan','23-Jan', '2-Feb','17-Feb'), date.process) + as.Date("2019-11-30")
+## p2 <- ggplot(subset(output, Date >= as.Date("2020-01-01")))+
+##     aes(x = Date, y = Rt) + geom_line(aes(group = sim), alpha = 0.3) +
+##     geom_line(stat = "summary", fun.y = "mean", col = "red") +
+##     theme_bw()
+## p2 <- p2 + geom_vline(xintercept = break_days)
+## p2 <- p2 + geom_hline(yintercept = 1)
+## p2 <- p2 + scale_y_continuous(minor_breaks = seq(0,5,0.5))
+## p2 <- p2 + scale_x_date(date_breaks = "5 days", date_minor_breaks = "1 day", date_labels = "%b %d")
+## p2 <- p2 + ylab('Rt') + xlab('Date')
+## p2
 
 ## ggsave('rt_use_simulated_it.pdf', width = 12, height = 8)
 
-## compare the WT curve with the curved genereted by (Cori + inferred It)
-wt_curve <- results[which(results$method == 'Wallinga-Teunis'),]$meanR
-wt_curve
-cori_i_curve <- data.frame(output %>% group_by(Date) %>% summarise(meanR = mean(Rt)))
-cori_i_curve
-plot(cori_i_curve, type = 'l', col = 'red', ylim = c(0,4))
-lines(cori_i_curve$Date, wt_curve)
-## organize the output data into results_january format and compare with cori and wt
+## ## compare the WT curve with the curved genereted by (Cori + inferred It)
+## wt_curve <- results[which(results$method == 'Wallinga-Teunis (smoothing)'),]$meanR
+## wt_curve
+## cori_i_curve <- data.frame(output %>% group_by(Date) %>% summarise(meanR = mean(Rt)))
+## cori_i_curve
+## plot(cori_i_curve, type = 'l', col = 'red', ylim = c(0,4))
+## lines(cori_i_curve$Date, wt_curve)
+
+## organize the output data into results format and compare with cori and wt
 infer_i_result <- output %>% group_by(Date) %>% summarise(method = 'Cori et al. (back-calculated incidence)',meanR = mean(Rt), lbd = quantile(Rt, 0.025), ubd = quantile(Rt, 0.975))
 head(infer_i_result)
 names(infer_i_result) <- c('date','method','meanR','lbd','ubd')
 results <- rbind(results, infer_i_result)
 print(tail(results))
 
+results$method <- factor(results$method, levels = c("Cori et al.", "Wallinga-Teunis (smoothing)", "Cori et al. (back-calculated incidence)", "Wallinga-Teunis (no smoothing)"))
+
 p3 <- ggplot(data = results, aes(x = date, y = meanR, group = method))
 #p3 <- ggplot(data = subset(results, date >= as.Date('2020-01-01')), aes(x = date, y = meanR, group = method))
-p3 <- p3 + geom_ribbon(aes(ymin = lbd, ymax = ubd, fill = method), alpha = 0.3) + geom_line( aes(colour = method))
+p3 <- p3 + geom_ribbon(aes(ymin = lbd, ymax = ubd, fill = method), alpha = 0.3) + geom_line( aes(colour = method, linetype = method))
 p3 <- p3 + geom_vline(xintercept = break_days)
 p3 <- p3 + geom_hline(yintercept = 1)
 p3 <- p3 + scale_y_continuous(minor_breaks = seq(0,5,0.5)) + scale_x_date(date_breaks = "5 days", date_minor_breaks = "1 day", date_labels = "%b %d")
-p3 <- p3 + scale_fill_manual(values = cbPalette) + scale_colour_manual(values=cbPalette)
-p3 <- p3 + ylab('R(t)') + xlab('Date') + theme_bw(base_size = 18) + theme(legend.position = "bottom") + labs(color = "Method", fill = "Method")
+p3 <- p3 + scale_fill_manual(values = cbPalette[c(1,2,1,2)]) + scale_colour_manual(values=cbPalette[c(1,2,1,2)]) + scale_linetype_manual(values = c("dashed", "dashed", "solid", "solid"))
+p3 <- p3 + ylab('R(t)') + xlab('Date') + theme_bw(base_size = 18) + theme(legend.position = "bottom") + labs(color = "Method", fill = "Method", linetype = "Method") + guides(fill=guide_legend(nrow=2))
 p3
 
 ggsave('rt_three_methods.pdf', width = 12, height = 8)
+ggsave('rt_three_methods.png', width = 12, height = 8)
